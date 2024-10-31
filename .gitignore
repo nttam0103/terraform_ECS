@@ -1,0 +1,7 @@
+
+# Ignore keypair folder
+keypair/ 
+.terraform
+terraform.tfstate
+terraform.tfstate.backup
+.terraform.lock.hcl
