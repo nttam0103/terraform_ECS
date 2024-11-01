@@ -140,38 +140,41 @@ output "ecr_repo_webapp_url" {
 }
 
 
-resource "null_resource" "erc_login" {
+
+# Login to ECR
+resource "null_resource" "ecr_login" {
   provisioner "local-exec" {
     command = "aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com"
   }
 }
 
+# Tag and Push MySQL Image
 resource "null_resource" "ecr_tag_mysql" {
-  depends_on = [null_resource.erc_login]
+  depends_on = [null_resource.ecr_login]
   provisioner "local-exec" {
-
-    command = "docker tag ${var.docker_image_mysql}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_mysql.repository_url}:${var.docker_tag}"
+    command = "docker tag ${var.docker_image_mysql}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_mysql.name}:${var.docker_tag}"
   }
 }
 
 resource "null_resource" "ecr_push_mysql" {
   depends_on = [null_resource.ecr_tag_mysql]
   provisioner "local-exec" {
-    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_erc_repository.ecr_repo_mysql.repository_url}:${var.docker_tag}"
+    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_mysql.name}:${var.docker_tag}"
   }
 }
 
+# Tag and Push WebApp Image  
 resource "null_resource" "ecr_tag_webapp" {
-  depends_on = [null_resource.erc_login]
+  depends_on = [null_resource.ecr_login]
   provisioner "local-exec" {
-
-    command = "docker tag ${var.docker_image_webapp}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_webapp.repository_url}:${var.docker_tag}"
+    command = "docker tag ${var.docker_image_webapp}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_webapp.name}:${var.docker_tag}"
   }
 }
 
 resource "null_resource" "ecr_push_webapp" {
   depends_on = [null_resource.ecr_tag_webapp]
   provisioner "local-exec" {
-    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_webapp.repository_url}:${var.docker_tag}"
+    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/${aws_ecr_repository.ecr_repo_webapp.name}:${var.docker_tag}"
   }
 }
+
