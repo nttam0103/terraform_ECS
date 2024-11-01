@@ -11,7 +11,6 @@ resource "aws_ecr_repository" "ecr_repo_mysql" {
     encryption_type = "KMS"
   }
 
-
 }
 
 # ECR Repository Policy cho MySQL
@@ -151,14 +150,14 @@ resource "null_resource" "ecr_tag_mysql" {
   depends_on = [null_resource.erc_login]
   provisioner "local-exec" {
 
-    command = "docker tag ${var.docker_image_mysql}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com/erc_repo_mysql.name:${var.docker_tag}"
+    command = "docker tag ${var.docker_image_mysql}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com/aws_ecr_repository.ecr_repo_mysql.name:${var.docker_tag}"
   }
 }
 
 resource "null_resource" "ecr_push_mysql" {
   depends_on = [null_resource.ecr_tag_mysql]
   provisioner "local-exec" {
-    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/erc_repo_mysql.name:${var.docker_tag}"
+    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/aws_ecr_repository.ecr_repo_mysql.name:${var.docker_tag}"
   }
 }
 
@@ -166,13 +165,13 @@ resource "null_resource" "ecr_tag_webapp" {
   depends_on = [null_resource.erc_login]
   provisioner "local-exec" {
 
-    command = "docker tag ${var.docker_image_webapp}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com/ecr_repo_webapp.name:${var.docker_tag}"
+    command = "docker tag ${var.docker_image_webapp}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com/aws_ecr_repository.ecr_repo_webapp.name:${var.docker_tag}"
   }
 }
 
 resource "null_resource" "ecr_push_webapp" {
   depends_on = [null_resource.ecr_tag_mysql]
   provisioner "local-exec" {
-    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/$ecr_repo_webapp.name:${var.docker_tag}"
+    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/aws_ecr_repository.ecr_repo_webapp.name:${var.docker_tag}"
   }
 }

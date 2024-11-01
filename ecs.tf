@@ -189,8 +189,8 @@ resource "aws_ecs_service" "app" {
   launch_type     = var.esc_launch_type
 
   network_configuration {
-    subnets          = [aws_subnet.public_subnet_us-east-2a, aws_subnet.public_subnet_us-east-2b]
-    security_groups  = [aws_security_group.private_security_group_id]
+    subnets          = [aws_subnet.public_subnet_us-east-2a.id, aws_subnet.public_subnet_us-east-2b.id]
+    security_groups  = [aws_security_group.sg_private.id]
     assign_public_ip = false
   }
 

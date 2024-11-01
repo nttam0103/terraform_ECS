@@ -25,6 +25,13 @@ resource "aws_security_group" "sg_nat_instance" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    description = "Allow traffic from private subnets"
+    from_port   = 0
+    to_port     = 0
+    protocol    = "tcp"
+    cidr_blocks = [aws_subnet.private_subnet_us-east-2a.cidr_block, aws_subnet.private_subnet_us-east-2b.cidr_block]
+  }
 
   egress {
     from_port   = 0
@@ -67,12 +74,6 @@ resource "aws_security_group" "sg_private" {
     Name = "mysql_sg"
   }
 }
-
-output "private_security_group_id" {
-  description = "ID of the MySQL security group"
-  value       = aws_security_group.sg_private.id
-}
-
 
 
 
