@@ -48,3 +48,6 @@ resource "aws_lb_listener" "front_end" {
     target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
+
+
+# Health Check ALB Listener 

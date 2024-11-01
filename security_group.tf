@@ -23,7 +23,7 @@ resource "aws_security_group" "sg_nat_instance" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["118.69.61.83/32"]
   }
   ingress {
     description = "Allow traffic from private subnets"
@@ -60,7 +60,7 @@ resource "aws_security_group" "sg_private" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["118.69.61.83/32"]
   }
 
   egress {
