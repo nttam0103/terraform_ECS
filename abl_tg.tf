@@ -6,7 +6,6 @@ resource "aws_lb" "alb_app" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb_sg.id]
   subnets            = [aws_subnet.public_subnet_us-east-2a.id, aws_subnet.public_subnet_us-east-2b.id]
-
   tags = {
     Name = "alb_app"
   }

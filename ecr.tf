@@ -11,7 +11,7 @@ resource "aws_ecr_repository" "ecr_repo_mysql" {
     encryption_type = "KMS"
   }
 
-  
+
 }
 
 # ECR Repository Policy cho MySQL
@@ -83,7 +83,7 @@ resource "aws_ecr_repository" "ecr_repo_webapp" {
     encryption_type = "KMS"
   }
 
-  
+
 }
 
 # ECR Repository Policy cho WebApp
@@ -138,4 +138,41 @@ resource "aws_ecr_lifecycle_policy" "ecr_lifecycle_webapp" {
 
 output "ecr_repo_webapp_url" {
   value = aws_ecr_repository.ecr_repo_webapp.repository_url
+}
+
+
+resource "null_resource" "erc_login" {
+  provisioner "local-exec" {
+    command = "aws ecr get-login-password --region ${var.region} | docker login --username AWS --password-stdin ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com"
+  }
+}
+
+resource "null_resource" "ecr_tag_mysql" {
+  depends_on = [null_resource.erc_login]
+  provisioner "local-exec" {
+
+    command = "docker tag ${var.docker_image_mysql}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com/erc_repo_mysql.name:${var.docker_tag}"
+  }
+}
+
+resource "null_resource" "ecr_push_mysql" {
+  depends_on = [null_resource.ecr_tag_mysql]
+  provisioner "local-exec" {
+    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/erc_repo_mysql.name:${var.docker_tag}"
+  }
+}
+
+resource "null_resource" "ecr_tag_webapp" {
+  depends_on = [null_resource.erc_login]
+  provisioner "local-exec" {
+
+    command = "docker tag ${var.docker_image_webapp}:${var.docker_tag} ${var.ecr_account_id}.dkr.ecr.us-east-2.amazonaws.com/ecr_repo_webapp.name:${var.docker_tag}"
+  }
+}
+
+resource "null_resource" "ecr_push_webapp" {
+  depends_on = [null_resource.ecr_tag_mysql]
+  provisioner "local-exec" {
+    command = "docker push ${var.ecr_account_id}.dkr.ecr.${var.region}.amazonaws.com/$ecr_repo_webapp.name:${var.docker_tag}"
+  }
 }

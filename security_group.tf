@@ -43,7 +43,7 @@ output "security_group_id" {
   value       = aws_security_group.sg_nat_instance.id
 }
 
-resource "aws_security_group" "mysql_sg" {
+resource "aws_security_group" "sg_private" {
   name        = "mysql_sg"
   description = "Allow MySQL inbound traffic"
   vpc_id      = aws_vpc.tamnt1-vpc.id
@@ -68,9 +68,9 @@ resource "aws_security_group" "mysql_sg" {
   }
 }
 
-output "mysql_security_group_id" {
+output "private_security_group_id" {
   description = "ID of the MySQL security group"
-  value       = aws_security_group.mysql_sg.id
+  value       = aws_security_group.sg_private.id
 }
 
 

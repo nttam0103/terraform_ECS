@@ -1,13 +1,13 @@
 
 # ECS Task Definition with 2 containers
-resource "aws_ecs_task_definition" "app" {
+resource "aws_ecs_task_definition" "task_definition_app" {
   family                   = "app-task"
   requires_compatibilities = ["FARGATE"]
-  network_mode            = "awsvpc"
-  cpu                     = 512
-  memory                  = 1024
-  execution_role_arn      = aws_iam_role.ecs_task_execution_role.arn
-  task_role_arn          = aws_iam_role.ecs_task_role.arn
+  network_mode             = "awsvpc"
+  cpu                      = 512
+  memory                   = 1024
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([
     {
@@ -16,31 +16,31 @@ resource "aws_ecs_task_definition" "app" {
       essential = true
       portMappings = [
         {
-                          "name": "webapp", 
-                          "containerPort": 80,
-                    "hostPort": 80,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
+          "name" : "webapp",
+          "containerPort" : 80,
+          "hostPort" : 80,
+          "protocol" : "tcp",
+          "appProtocol" : "http"
         }
       ]
-      environment: [
-                {
-                    "name": "MYSQL_DATABASE",
-                    "value": "myapp"
-                },
-                {
-                    "name": "MYSQL_PASSWORD",
-                    "value": "myapp"
-                },
-                {
-                    "name": "MYSQL_HOST",
-                    "value": "0.0.0.0"
-                },
-                {
-                    "name": "MYSQL_USER",
-                    "value": "myapp"
-                }
-            ],
+      environment : [
+        {
+          "name" : "MYSQL_DATABASE",
+          "value" : "myapp"
+        },
+        {
+          "name" : "MYSQL_PASSWORD",
+          "value" : "myapp"
+        },
+        {
+          "name" : "MYSQL_HOST",
+          "value" : "0.0.0.0"
+        },
+        {
+          "name" : "MYSQL_USER",
+          "value" : "myapp"
+        }
+      ],
 
       logConfiguration = {
         logDriver = "awslogs"
@@ -57,31 +57,31 @@ resource "aws_ecs_task_definition" "app" {
       essential = true
       portMappings = [
         {
-                          "name": "mysql",
-                    "containerPort": 3306,
-                    "hostPort": 3306,
-                    "protocol": "tcp",
-                    "appProtocol": "http"
+          "name" : "mysql",
+          "containerPort" : 3306,
+          "hostPort" : 3306,
+          "protocol" : "tcp",
+          "appProtocol" : "http"
         }
       ],
-    environment: [
-                {
-                    "name": "MYSQL_DATABASE",
-                    "value": "myapp"
-                },
-                {
-                    "name": "MYSQL_PASSWORD",
-                    "value": "myapp"
-                },
-                {
-                    "name": "MYSQL_ROOT_PASSWORD",
-                    "value": "root"
-                },
-                {
-                    "name": "MYSQL_USER",
-                    "value": "myapp"
-                }
-            ],
+      environment : [
+        {
+          "name" : "MYSQL_DATABASE",
+          "value" : "myapp"
+        },
+        {
+          "name" : "MYSQL_PASSWORD",
+          "value" : "myapp"
+        },
+        {
+          "name" : "MYSQL_ROOT_PASSWORD",
+          "value" : "root"
+        },
+        {
+          "name" : "MYSQL_USER",
+          "value" : "myapp"
+        }
+      ],
       logConfiguration = {
         logDriver = "awslogs"
         options = {
@@ -95,7 +95,7 @@ resource "aws_ecs_task_definition" "app" {
 
   runtime_platform {
     operating_system_family = "LINUX"
-    cpu_architecture       = "X86_64"
+    cpu_architecture        = "X86_64"
   }
 }
 
@@ -143,7 +143,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 
 
 # ECS Cluster
-resource "aws_ecs_cluster" "main" {
+resource "aws_ecs_cluster" "cluster_main" {
   name = "app-cluster"
 
   setting {
@@ -180,45 +180,24 @@ resource "aws_ecs_cluster" "main" {
 #   }
 # }
 
-# # ECS Service
-# resource "aws_ecs_service" "app" {
-#   name            = "app-service"
-#   cluster         = aws_ecs_cluster.main.id
-#   task_definition = aws_ecs_task_definition.app.arn
-#   desired_count   = 1
-#   launch_type     = "FARGATE"
+# ECS Service
+resource "aws_ecs_service" "app" {
+  name            = "app-service"
+  cluster         = aws_ecs_cluster.cluster_main.id
+  task_definition = aws_ecs_task_definition.task_definition_app.arn
+  desired_count   = 1
+  launch_type     = var.esc_launch_type
 
-#   network_configuration {
-#     subnets          = aws_subnet.private[*].id
-#     security_groups  = [aws_security_group.ecs_tasks.id]
-#     assign_public_ip = false
-#   }
-# }
+  network_configuration {
+    subnets          = [aws_subnet.public_subnet_us-east-2a, aws_subnet.public_subnet_us-east-2b]
+    security_groups  = [aws_security_group.private_security_group_id]
+    assign_public_ip = false
+  }
 
-# # Security Group for ECS Tasks
-# resource "aws_security_group" "ecs_tasks" {
-#   name        = "ecs-tasks-sg"
-#   description = "Allow inbound traffic for ECS tasks"
-#   vpc_id      = aws_vpc.main.id
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app_tg.arn
+    container_name   = "webapp"
+    container_port   = 80
+  }
+}
 
-#   ingress {
-#     from_port   = 8080
-#     to_port     = 8080
-#     protocol    = "tcp"
-#     cidr_blocks = [aws_vpc.main.cidr_block]
-#   }
-
-#   ingress {
-#     from_port   = 9090
-#     to_port     = 9090
-#     protocol    = "tcp"
-#     cidr_blocks = [aws_vpc.main.cidr_block]
-#   }
-
-#   egress {
-#     from_port   = 0
-#     to_port     = 0
-#     protocol    = "-1"
-#     cidr_blocks = ["0.0.0.0/0"]
-#   }
-# }

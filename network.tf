@@ -35,8 +35,8 @@ resource "aws_internet_gateway" "tamnt1-igw" {
 resource "aws_route_table" "tamnt1-rtb-public" {
   vpc_id = aws_vpc.tamnt1-vpc.id
   route {
-    cidr_block           = "0.0.0.0/0"
-    gateway_id           = aws_internet_gateway.tamnt1-igw.id
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.tamnt1-igw.id
   }
   tags = {
     Name = "tamnt1-rtb-public"
